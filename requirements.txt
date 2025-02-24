@@ -1,5 +1,5 @@
 ebooklib
 BeautifulSoup4
 lxml
-windows-curses
-console-menu
+pytermgui
+asciimatics

@@ -59,18 +59,20 @@ class EpubDb:
     with open(toc_filename, 'w', encoding='utf-8') as f:
       json.dump(toc, f, ensure_ascii=False, indent=4)
 
+  def chapter_to_dirname(self, chapter):
+    illegal_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+    for char in illegal_chars:
+      chapter = chapter.replace(char, '_')
+    return chapter
+
   def _save_chapter(self, chapter, toc_item, output_dir):
     text_content = self._chapter_to_text(chapter)
     if not text_content.strip():
       return
     text_content = '\n'.join(line.strip() for line in text_content.splitlines() if line.strip())
 
-    toc_title = toc_item["title"]
+    toc_title = self.chapter_to_dirname(toc_item["title"])
     chapter_name = chapter.get_name()
-    illegal_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
-    for char in illegal_chars:
-      toc_title = toc_title.replace(char, '_')
-      chapter_name = chapter_name.replace(char, '_')
 
     filename = os.path.join(output_dir, toc_title, chapter_name)
     os.makedirs(os.path.dirname(filename), exist_ok=True)
