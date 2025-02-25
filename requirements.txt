@@ -1,5 +1,5 @@
 ebooklib
 BeautifulSoup4
-lxml
-pytermgui
 asciimatics
+transformers
+torch

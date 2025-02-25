@@ -6,6 +6,7 @@ from asciimatics.scene import Scene
 from asciimatics.effects import Print
 from asciimatics.renderers import StaticRenderer
 from asciimatics.exceptions import NextScene, StopApplication
+import lib.analyse
 
 class EpubBrowserFrame(Frame):
     # Sample content for second quadrant based on selection
@@ -70,8 +71,7 @@ class EpubBrowserFrame(Frame):
         layout.add_widget(Divider(), 1)
 
         # Summary
-        self._summary_label = Label("Quadrant 4:\nAdditional Info\nMore data\nEnd",
-                        height=half_height - 4)
+        self._summary_label = Label("", height=half_height - 4)
         layout.add_widget(Label("Summary"), 1)
         layout.add_widget(Divider(), 1)
         layout.add_widget(self._summary_label, 1)
@@ -97,6 +97,8 @@ class EpubBrowserFrame(Frame):
     def process_event(self, event):
         if event and event.key_code == ord('q'):
             raise StopApplication("User quit")
+        elif event and event.key_code == ord('s'):
+            self._summary_label.text = lib.analyse.summarize(self._text_label.text)
         return super().process_event(event)
 
 def _epub_browser(screen, epub_book):
