@@ -3,20 +3,11 @@ import json
 from asciimatics.screen import Screen
 from asciimatics.widgets import Frame, ListBox, Layout, Label, Divider
 from asciimatics.scene import Scene
-from asciimatics.effects import Print
-from asciimatics.renderers import StaticRenderer
-from asciimatics.exceptions import NextScene, StopApplication
+from asciimatics.exceptions import StopApplication
+from asciimatics.event import KeyboardEvent
 import lib.analyse
 
 class EpubBrowserFrame(Frame):
-    # Sample content for second quadrant based on selection
-    content_dict = {
-        1: "Details about Item 1:\n- Feature A\n- Feature B\n- Feature C",
-        2: "Details about Item 2:\n- Option X\n- Option Y",
-        3: "Details about Item 3:\n- Info 1\n- Info 2\n- Info 3\n- Info 4",
-        4: "Details about Item 4:\n- Single line of info"
-    }
-
     def __init__(self, screen, epub_book):
         super().__init__(screen,
                         screen.height,
@@ -93,12 +84,14 @@ class EpubBrowserFrame(Frame):
             with open(file, 'r', encoding='utf-8') as f:
                 selected_content = f.read()
             self._text_label.text = selected_content
+            self._summary_label.text = ""
 
     def process_event(self, event):
-        if event and event.key_code == ord('q'):
-            raise StopApplication("User quit")
-        elif event and event.key_code == ord('s'):
-            self._summary_label.text = lib.analyse.summarize(self._text_label.text)
+        if event and isinstance(event, KeyboardEvent):
+            if event.key_code == ord('q'):
+                raise StopApplication("User quit")
+            elif event.key_code == ord('s'):
+                self._summary_label.text = lib.analyse.summarize(self._text_label.text)
         return super().process_event(event)
 
 def _epub_browser(screen, epub_book):
