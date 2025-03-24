@@ -5,7 +5,6 @@ from asciimatics.widgets import Frame, ListBox, Layout, Label, Divider
 from asciimatics.scene import Scene
 from asciimatics.exceptions import StopApplication
 from asciimatics.event import KeyboardEvent
-import lib.analyse
 
 class EpubBrowserFrame(Frame):
     def __init__(self, screen, epub_book):
@@ -84,14 +83,15 @@ class EpubBrowserFrame(Frame):
             with open(file, 'r', encoding='utf-8') as f:
                 selected_content = f.read()
             self._text_label.text = selected_content
-            self._summary_label.text = ""
+            summary_file = os.path.join(self.chapter_dir, f"{self._section_listbox.options[self._section_listbox.value][0]}.mistral.txt")
+            print(summary_file)
+            with open(summary_file, 'r', encoding='utf-8') as f:
+                self._summary_label.text = f.read()
 
     def process_event(self, event):
         if event and isinstance(event, KeyboardEvent):
             if event.key_code == ord('q'):
                 raise StopApplication("User quit")
-            elif event.key_code == ord('s'):
-                self._summary_label.text = lib.analyse.summarize(self._text_label.text)
         return super().process_event(event)
 
 def _epub_browser(screen, epub_book):
@@ -128,7 +128,7 @@ class EpubBook:
         chapter_dir = os.path.join(self.epub_db_dir, chapter)
         sections = []
         if os.path.exists(chapter_dir):
-            sections = os.listdir(chapter_dir)
+            sections = [file for file in os.listdir(chapter_dir) if file.endswith('.html')]
         return chapter_dir, sections
 
 class EpubBrowser:

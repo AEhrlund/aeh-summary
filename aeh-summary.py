@@ -1,8 +1,7 @@
 import sys
-from lib.epub import EpubDb
-from lib.browse import EpubBrowser
+from lib.generate_summary import EpubGenerateSummary
+from lib.models.mistral import Mistral
 
 epub_file = sys.argv[1]
-epub_db = EpubDb(epub_file)
-browse = EpubBrowser(epub_db.epub_db_dir)
-browse.browse()
+epub_db = EpubGenerateSummary(epub_file)
+epub_db.generate_summary(Mistral())

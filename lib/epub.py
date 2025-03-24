@@ -6,25 +6,31 @@ import json
 
 class EpubDb:
   def __init__(self, epub_file):
-    root_dir = os.path.join(os.path.dirname(__file__), '../epub_db')
     if os.path.isdir(epub_file):
-      self.epub_db_dir = epub_file
-      self.toc = self._load_get_toc(self.epub_db_dir)
+      self._load_epub_db(epub_file)
     else:
-      epub_name = os.path.basename(epub_file)
-      epub_name = os.path.splitext(epub_name)[0]
-      self.epub_db_dir = os.path.join(root_dir, epub_name)
-      self.toc = self._epub_to_text_chapters(epub_file, self.epub_db_dir)
+      self._create_epub_db(epub_file)
+
+  def _load_epub_db(self, epub_db_dir):
+      self.epub_db_dir = epub_db_dir
+      self.toc = self._load_get_toc(self.epub_db_dir)
+
+  def _create_epub_db(self, epub_file):
+    root_dir = os.path.join(os.path.dirname(__file__), '../../epub_db')
+    epub_name = os.path.basename(epub_file)
+    epub_name = os.path.splitext(epub_name)[0]
+    self.epub_db_dir = os.path.join(root_dir, epub_name)
+    self.toc = self._epub_to_text_chapters(epub_file, self.epub_db_dir)
 
   def _epub_to_text_chapters(self, epub_file, epub_db_dir):
     os.makedirs(epub_db_dir)
     book = ebooklib.epub.read_epub(epub_file)
     toc = self._epub_get_toc(book)
-    self._save_toc(toc, book, epub_db_dir)
+    self._save_toc(toc, epub_db_dir)
     for item in book.get_items():
       if item.get_type() == ebooklib.ITEM_DOCUMENT:
         if self._find_toc_item(toc, item.get_name()):
-          toc_item = self._find_toc_item(toc, item.get_name())  
+          toc_item = self._find_toc_item(toc, item.get_name())
         self._save_chapter(item, toc_item, epub_db_dir)
     return toc
 
@@ -53,13 +59,15 @@ class EpubDb:
         return item
     return None
 
-  def _save_toc(self, toc, book, output_dir):
+  def _save_toc(self, toc, output_dir):
     toc_filename = os.path.join(output_dir, 'toc.json')
     os.makedirs(output_dir, exist_ok=True)
+    for index, item in enumerate(toc, start=1):
+      item['title'] = f"{index} - {item['title']}"
     with open(toc_filename, 'w', encoding='utf-8') as f:
       json.dump(toc, f, ensure_ascii=False, indent=4)
 
-  def chapter_to_dirname(self, chapter):
+  def _chapter_to_dirname(self, chapter):
     illegal_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
     for char in illegal_chars:
       chapter = chapter.replace(char, '_')
@@ -71,7 +79,7 @@ class EpubDb:
       return
     text_content = '\n'.join(line.strip() for line in text_content.splitlines() if line.strip())
 
-    toc_title = self.chapter_to_dirname(toc_item["title"])
+    toc_title = self._chapter_to_dirname(toc_item["title"])
     chapter_name = chapter.get_name()
 
     filename = os.path.join(output_dir, toc_title, chapter_name)
